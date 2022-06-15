@@ -41,9 +41,14 @@ function insertProductInHtml(product) {
     paragraph.classList.add("productDescription");
     paragraph.innerText = product.description;
 
+    let price = document.createElement('p');
+    price.classList.add("price");
+    price.innerText = "Prix = " + product.price + "€";
+
     article.appendChild(image);
     article.appendChild(title);
     article.appendChild(paragraph);
+    article.appendChild(price);
     anchor.appendChild(article);
 
     itemsContainer.appendChild(anchor);
