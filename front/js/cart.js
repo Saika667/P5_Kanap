@@ -1,4 +1,4 @@
-/* Variables et constantes */
+/* ------------------------------------Variables et constantes------------------------------------ */
 let cartItem = document.getElementById('cart__items');
 let cart = localStorage.getItem('products');
 let totalQuantityElt = document.getElementById('totalQuantity');
@@ -7,7 +7,23 @@ let totalQuantity = 0;
 let totalPrice = 0;
 let deleteButton = document.getElementsByClassName('deleteItem');
 let inputQuantity = document.getElementsByClassName('itemQuantity');
-/* FIN Variables et constantes */
+let inputFirstName = document.getElementById('firstName');
+let inputLastName = document.getElementById('lastName');
+let inputAddress = document.getElementById('address');
+let inputCity = document.getElementById('city');
+let inputEmail = document.getElementById('email');
+let submitButton = document.getElementById('order');
+
+/* -----------------------------------Regex---------------------------------- */
+//string @ string . string (2 à 3 lettres)
+let regexEmail = new RegExp(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/);
+//uniquement des lettres et minimum 2
+let regexNamesAndCity = new RegExp(/^[A-Za-z]{2,}$/);
+//lettre et chiffres uniquement et minimum 10
+let regexAddress = new RegExp(/^[0-9A-Za-z]{10,}$/);
+/* -----------------------------------FIN Regex---------------------------------- */
+
+/* ------------------------------------FIN Variables et constantes------------------------------------ */
 
 //récupération des éléments dans le local storage et transformation de la string en objet (JSON.parse)
 cart = JSON.parse(cart);
@@ -145,3 +161,107 @@ function calculateTotal(productId, oldQuantity, newQuantity) {
         totalPriceElt.innerText = parseInt(totalPriceElt.innerText) + priceDifference;
     })
 }
+//permet de confirmer la commande
+submitButton.addEventListener('click', function(evt) {
+    //evite le chargement de la page au click du bouton
+    evt.preventDefault();
+    //récupère les valeurs des inputs
+    let firstName = inputFirstName.value;
+    let lastName = inputLastName.value;
+    let address = inputAddress.value;
+    let city = inputCity.value;
+    let email = inputEmail.value;
+
+    //création de l'objet contact
+    let contact = {
+        firstName: firstName,
+        lastName: lastName,
+        address: address,
+        city: city,
+        email: email
+    };
+
+    let products = JSON.parse(localStorage.getItem('products'));
+    let productsIds = [];
+
+    for (let product of products) {
+        productsIds.push(product.id);
+    }
+
+    // création de l'objet body avec à l'intérieur l'objet contact et le tableau des id produits
+    let body = {
+        contact: contact,
+        products: productsIds
+    };
+
+    /*POST permet d'envoyer des données à l'API
+    headers permet de donner de l'information sur les données
+    body est un objet mais on le transforme en string car API attend une string*/
+    fetch("http://localhost:3000/api/products/order", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        //JSON.stringify car l'API attend un array de string products-ID
+        body: JSON.stringify(body)
+    })
+    .then(function(res) {
+        if (res.ok) {
+            return res.json();
+        }
+    })
+    .then(function(order) {
+        let orderId = order.orderId;
+        /*permet de mettre orderId dans l'URL */
+        document.location.href = "./confirmation.html?orderId=" + orderId;
+    });
+});
+
+/*---------------------------------- Validation de donnée ---------------------------------*/
+//focusout : lorsque le champs perd le focus
+inputEmail.addEventListener('focusout', function() {
+    let errorElement = document.getElementById('emailErrorMsg');
+    // ! sert à la négation
+    if (!regexEmail.test(this.value)) {
+        errorElement.innerText = "Email erroné, merci de corriger.";
+    } else {
+        errorElement.innerText = "";
+    }
+});
+
+inputFirstName.addEventListener('focusout', function() {
+    let errorElement = document.getElementById('firstNameErrorMsg');
+    if (!regexNamesAndCity.test(this.value)) {
+        errorElement.innerText = "Prénom erroné, merci de corriger.";
+    } else {
+        errorElement.innerHTML = "";
+    }
+});
+
+inputLastName.addEventListener('focusout', function() {
+    let errorElement = document.getElementById('lastNameErrorMsg');
+    if (!regexNamesAndCity.test(this.value)) {
+        errorElement.innerText = "Nom erroné, merci de corriger.";
+    } else {
+        errorElement.innerHTML = "";
+    }
+});
+
+inputCity.addEventListener('focusout', function() {
+    let errorElement = document.getElementById('cityErrorMsg');
+    if (!regexNamesAndCity.test(this.value)) {
+        errorElement.innerText = "Ville erronée, merci de corriger.";
+    } else {
+        errorElement.innerText = "";
+    }
+});
+
+inputAddress.addEventListener('focusout', function() {
+    let errorElement = document.getElementById('addressErrorMsg');
+    if (!regexAddress.test(this.value)) {
+        errorElement.innerText = "Adresse erronée, merci de corriger.";
+    } else {
+        errorElement.innerText = "";
+    }
+});
+/*---------------------------------- Validation de donnée ---------------------------------*/
