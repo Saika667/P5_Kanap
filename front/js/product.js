@@ -14,6 +14,8 @@ url = new URL(url);
 let id = url.searchParams.get("id");
 /* FIN récupération de l'id dans l'URL */
 
+/*permet de récupérer et afficher les informations (image, titre, description, prix, couleurs) 
+en lien avec le produit sur lequel l'utilisateur à cliquer depuis la page d'accueil*/
 function getProduct(productId) {
     fetch(`http://localhost:3000/api/products/${productId}`)
         .then(function(res) {
@@ -49,12 +51,14 @@ getProduct(id);
 // ajout au local storage à chaque click
 button.addEventListener('click', function() {
     let color = colorInput.value;
+    //parseInt pour définir un entier et non pas une string
     let quantityValue = parseInt(quantity.value);
     let element =  document.getElementsByClassName('item__content')[0];
     let statusMsg = document.getElementById('status-msg');
 
     
     /*----------Validation de donnée----------*/
+    //si il n'y a pas encore de status-msg créé alors création de l'élément HTML
     if (!statusMsg) {
         let h2 = document.createElement('h2');
         h2.id = "status-msg";
@@ -62,7 +66,8 @@ button.addEventListener('click', function() {
         statusMsg = document.getElementById('status-msg');
     }
     
-    //vérification qu'une couleur est sélectionnée et que la quantité n'est pas égale à 0
+    /*vérification qu'une couleur est sélectionnée et que la quantité n'est pas égale à 0
+    si on rentre dans cette boucle on affiche le message d'erreur et on arrête l'exécution avec return*/
     if (color === "" || quantityValue === 0) {
         statusMsg.innerText = "Sélectionner une couleur et une quantité avant d'ajouter l'article à votre panier.";
         return false;
@@ -77,17 +82,17 @@ button.addEventListener('click', function() {
     //création d'un objet avec système de clé-valeur
     let productOrder = {
         id: id,
-        //parseInt pour définir un entier et non pas une string
         quantity: quantityValue,
         image: document.getElementById('productImage').src,
         title: title.innerText,
         color : color
     };
+
     /* création de la variable cart
     getItem sert à récupérer une valeur stocké dans local storage
     "products" est la clé dans le local storage (local storage fonctionne avec un système de clé-valeur)
-    on récupère d'abord car si on utilise juste setItem on écrase le premier objet dans le local storage
-    */
+    on récupère d'abord (avec getItem) car si on utilise juste setItem on écrase le premier objet 
+    dans le local storage */
     let cart = localStorage.getItem('products');
 
     /* création des cas particuliers :
@@ -96,8 +101,7 @@ button.addEventListener('click', function() {
     else, on se situe dans le cas d'après le premier click (deuxième, troisième etc...)
     pour ajouter un objet dans un local storage il faut être sous forme de string sinon erreur
     si on est sous forme de string lors de l'ajout dans le tableau (push) ->erreur "is not a function"
-    transformation de string en objet ->JSON.parse
-    */
+    transformation de string en objet ->JSON.parse */
     if(cart === null) {
         cart = [];
     } else {
@@ -105,22 +109,23 @@ button.addEventListener('click', function() {
     }
     // variable sert à savoir si on est entré on non dans le if de la boucle for
     let newItem = true;
-    //sert à vérifier si le produit ajouter existe déjà dans le local storage si oui incrémentation de la quantité
+    /* sert à vérifier si le produit ajouter existe déjà dans le local storage si oui incrémentation 
+    de la quantité */
     for (let produit of cart) {
         if (productOrder.title === produit.title && productOrder.color === produit.color) {
             produit.quantity += productOrder.quantity;
             newItem = false;
         }
     }
-
+    /* cas ou c'est un nouveau produit (titre et couleur différente des autres produits présents 
+    dans le local storage)*/
     if (newItem === true) {
         // on ajoute l'objet dans le tableau initier au premier click
         cart.push(productOrder);
     }
 
     /* setItem ajout d'un objet dans local storage
-    objet transformé en string car local storage n'accepte que des strings
-    */
+    objet transformé en string (JSON.stringify) car local storage n'accepte que des strings */
     localStorage.setItem('products', JSON.stringify(cart));
     statusMsg.innerText = "L'article a bien été ajouté à votre panier.";
 })

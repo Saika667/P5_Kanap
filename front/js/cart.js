@@ -19,7 +19,7 @@ let submitButton = document.getElementById('order');
 let regexEmail = new RegExp(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/);
 //uniquement des lettres et minimum 2
 let regexNamesAndCity = new RegExp(/^[A-Za-z]{2,}$/);
-//lettre et chiffres uniquement et minimum 10
+//lettre et chiffres uniquement et minimum 10 -> à modifier regex incorrect
 let regexAddress = new RegExp(/^[0-9A-Za-z]{10,}$/);
 /* -----------------------------------FIN Regex---------------------------------- */
 
@@ -28,11 +28,13 @@ let regexAddress = new RegExp(/^[0-9A-Za-z]{10,}$/);
 //récupération des éléments dans le local storage et transformation de la string en objet (JSON.parse)
 cart = JSON.parse(cart);
 
+//cas ou le panier est vide
 if (cart === null) {
     cartItem.innerHTML = `<h2>Le panier est vide !</h2>`;
 }
 
 for (let item of cart) {
+    // fetch pour récupérer le prix depuis l'API car non stocké dans le local storage
     fetch("http://localhost:3000/api/products/" + item.id)
         .then(function(res) {
             if (res.ok) {
@@ -68,6 +70,7 @@ for (let item of cart) {
                 </div>
             </article>`;
             cartItem.innerHTML += element;
+
             /*calcul quantité tot & calcul prix tot:
             à l'intérieur du "then" car "then" asynchrone, si on met à l'extéieur c'est 0
             car ça n'attend pas le retour du "then" pour retourner la valeur*/
@@ -96,6 +99,7 @@ for (let item of cart) {
 function deleteProductFromCart(element) {
     //permet de récupérer l'article du bloc de code "let element" dont fait partie le bouton supprimer
     let article = element.closest('article');
+
     /*dataset permet de réccupérer l'attribut custom type "data-id"
     on remplace "data-" de l'HTML par "dataset" dans le JS*/
     let productId = article.dataset.id;
@@ -103,7 +107,7 @@ function deleteProductFromCart(element) {
 
     /*Il faut récupérer l'input car l'élément html ciblé pour cette fonction est le bouton supprimé
     mais pour calculateTotal on a besoin de l'input contenant la quantité
-    closest permet de remonter aux parentsen direction de la racine seulement, 
+    closest permet de remonter aux parents en direction de la racine seulement, 
     utilisation de querySelector car itemQuantity est un enfant d'un des parents*/
     let input = element.closest('article').querySelector('.itemQuantity');
     console.log(input);
@@ -111,9 +115,12 @@ function deleteProductFromCart(element) {
     //parametre newQuantity = 0 car on supprime l'élément donc la valeur sera forcement 0
     calculateTotal(productId, oldValue, 0);
 
-    //suppression de l'élément dans le local storage
+    /*suppression de l'élément dans le local storage
+    utilisation de "j" dans la boucle for car cette fonction va être utiliser dans une autre 
+    boucle for et mettre une boucle dans une boucle avec "i" pour les deux boucles peut poser problème*/
     for (let j = 0; j < cart.length; j++) {
         if (cart[j].id === productId && cart[j].color === productColor) {
+            //splice supprime un élément du tableau
             cart.splice(j, 1);
             localStorage.setItem('products', JSON.stringify(cart));
         }
@@ -161,9 +168,10 @@ function calculateTotal(productId, oldQuantity, newQuantity) {
         totalPriceElt.innerText = parseInt(totalPriceElt.innerText) + priceDifference;
     })
 }
+
 //permet de confirmer la commande
 submitButton.addEventListener('click', function(evt) {
-    //evite le chargement de la page au click du bouton
+    //evite le chargement de la page au click du bouton (comportement par défaut d'un bouton type submit)
     evt.preventDefault();
     //récupère les valeurs des inputs
     let firstName = inputFirstName.value;
@@ -212,7 +220,11 @@ submitButton.addEventListener('click', function(evt) {
     })
     .then(function(order) {
         let orderId = order.orderId;
-        /*permet de mettre orderId dans l'URL */
+        /*permet de mettre orderId dans l'URL 
+        document.location.href permet de changer de page
+        "./" permet de reprendre l'URL courant (pas besoin de renoter le début de l'URL)
+        "?"" permet d'indiquer que c'est le début des paramètres, s'il y avait déjà des paramètres
+        on aurait mis "&" et non pas "?"*/
         document.location.href = "./confirmation.html?orderId=" + orderId;
     });
 });
@@ -264,4 +276,4 @@ inputAddress.addEventListener('focusout', function() {
         errorElement.innerText = "";
     }
 });
-/*---------------------------------- Validation de donnée ---------------------------------*/
+/*---------------------------------- FIN Validation de donnée ---------------------------------*/
