@@ -18,9 +18,7 @@ let submitButton = document.getElementById('order');
 //string @ string . string (2 à 3 lettres)
 let regexEmail = new RegExp(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/);
 //uniquement des lettres et minimum 2
-let regexNamesAndCity = new RegExp(/^[A-Za-z]{2,}$/);
-//lettre et chiffres uniquement et minimum 10 -> à modifier regex incorrect
-let regexAddress = new RegExp(/^[0-9A-Za-z]{10,}$/);
+let regexNamesAndCityAddress = new RegExp(/^[A-Za-z]{2,}$/);
 /* -----------------------------------FIN Regex---------------------------------- */
 
 /* ------------------------------------FIN Variables et constantes------------------------------------ */
@@ -180,6 +178,34 @@ submitButton.addEventListener('click', function(evt) {
     let city = inputCity.value;
     let email = inputEmail.value;
 
+    /*-------------Validation de donnée avant d'envoyer la commande----------------- */
+
+    /*cette variable permet de savoir si on est entré ou non dans l'un des if 
+    la succession de if permet de faire un retour à l'utilisateur sur toutes les saisies erronées
+    et non pas seulement sur la première erreur trouvée*/
+    let validationError = false;
+
+    if (emailValidation(email) === false) {
+        validationError = true;
+    }
+    if (firstNameValidation(firstName) === false) {
+        validationError = true;
+    }
+    if (lastNameValidation(lastName) === false) {
+        validationError = true;
+    }
+    if (addressValidation(address) === false) {
+        validationError = true;
+    }
+    if (cityValidation(city) === false) {
+        validationError = true;
+    }
+    
+    if (validationError === true) {
+        return;
+    }
+    /*-------------FIN Validation de donnée avant d'envoyer la commande----------------- */
+
     //création de l'objet contact
     let contact = {
         firstName: firstName,
@@ -215,6 +241,7 @@ submitButton.addEventListener('click', function(evt) {
     })
     .then(function(res) {
         if (res.ok) {
+            localStorage.removeItem('products');
             return res.json();
         }
     })
@@ -232,48 +259,78 @@ submitButton.addEventListener('click', function(evt) {
 /*---------------------------------- Validation de donnée ---------------------------------*/
 //focusout : lorsque le champs perd le focus
 inputEmail.addEventListener('focusout', function() {
-    let errorElement = document.getElementById('emailErrorMsg');
-    // ! sert à la négation
-    if (!regexEmail.test(this.value)) {
-        errorElement.innerText = "Email erroné, merci de corriger.";
-    } else {
-        errorElement.innerText = "";
-    }
+    emailValidation(this.value);
 });
 
 inputFirstName.addEventListener('focusout', function() {
-    let errorElement = document.getElementById('firstNameErrorMsg');
-    if (!regexNamesAndCity.test(this.value)) {
-        errorElement.innerText = "Prénom erroné, merci de corriger.";
-    } else {
-        errorElement.innerHTML = "";
-    }
+    firstNameValidation(this.value);
 });
 
 inputLastName.addEventListener('focusout', function() {
-    let errorElement = document.getElementById('lastNameErrorMsg');
-    if (!regexNamesAndCity.test(this.value)) {
-        errorElement.innerText = "Nom erroné, merci de corriger.";
-    } else {
-        errorElement.innerHTML = "";
-    }
+    lastNameValidation(this.value);
 });
 
 inputCity.addEventListener('focusout', function() {
-    let errorElement = document.getElementById('cityErrorMsg');
-    if (!regexNamesAndCity.test(this.value)) {
-        errorElement.innerText = "Ville erronée, merci de corriger.";
-    } else {
-        errorElement.innerText = "";
-    }
+    cityValidation(this.value);
 });
 
 inputAddress.addEventListener('focusout', function() {
-    let errorElement = document.getElementById('addressErrorMsg');
-    if (!regexAddress.test(this.value)) {
-        errorElement.innerText = "Adresse erronée, merci de corriger.";
+    addressValidation(this.value);
+});
+
+function emailValidation(value) {
+    let errorElement = document.getElementById('emailErrorMsg');
+    // ! sert à la négation
+    if (!regexEmail.test(value)) {
+        errorElement.innerText = "Email erroné, merci de corriger.";
+        return false;
     } else {
         errorElement.innerText = "";
+        return true;
     }
-});
+}
+
+function firstNameValidation(value) {
+    let errorElement = document.getElementById('firstNameErrorMsg');
+    if (!regexNamesAndCityAddress.test(value)) {
+        errorElement.innerText = "Prénom erroné, merci de corriger.";
+        return false;
+    } else {
+        errorElement.innerHTML = "";
+        return true;
+    }
+}
+
+function lastNameValidation(value) {
+    let errorElement = document.getElementById('lastNameErrorMsg');
+    if (!regexNamesAndCityAddress.test(value)) {
+        errorElement.innerText = "Nom erroné, merci de corriger.";
+        return false;
+    } else {
+        errorElement.innerHTML = "";
+        return true;
+    }
+}
+
+function cityValidation(value) {
+    let errorElement = document.getElementById('cityErrorMsg');
+    if (!regexNamesAndCityAddress.test(value)) {
+        errorElement.innerText = "Ville erronée, merci de corriger.";
+        return false;
+    } else {
+        errorElement.innerText = "";
+        return true;
+    }
+}
+
+function addressValidation(value) {
+    let errorElement = document.getElementById('addressErrorMsg');
+    if (!regexNamesAndCityAddress.test(value)) {
+        errorElement.innerText = "Adresse erronée, merci de corriger.";
+        return false;
+    } else {
+        errorElement.innerText = "";
+        return true;
+    }
+}
 /*---------------------------------- FIN Validation de donnée ---------------------------------*/
