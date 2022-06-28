@@ -13,7 +13,6 @@ function getProductList() {
         })
         .then(function(products) {
             for (let product of products) { 
-                console.log(product);
                 insertProductInHtml(product);
             }
         });
@@ -49,8 +48,6 @@ function insertProductInHtml(product) {
     anchor.appendChild(article);
 
     itemsContainer.appendChild(anchor);
-
-    console.log(itemsContainer);
 }
 
 /*<section class="items" id="items"> 

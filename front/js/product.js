@@ -43,7 +43,6 @@ function getProduct(productId) {
 
                 colorInput.appendChild(option);
             }
-           console.log(product);
         })
 }
 getProduct(id);

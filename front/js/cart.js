@@ -108,7 +108,6 @@ function deleteProductFromCart(element) {
     closest permet de remonter aux parents en direction de la racine seulement, 
     utilisation de querySelector car itemQuantity est un enfant d'un des parents*/
     let input = element.closest('article').querySelector('.itemQuantity');
-    console.log(input);
     let oldValue = input.dataset.oldValue;
     //parametre newQuantity = 0 car on supprime l'élément donc la valeur sera forcement 0
     calculateTotal(productId, oldValue, 0);
@@ -138,7 +137,6 @@ function modifyQuantity(element, event) {
     let oldValue = element.dataset.oldValue;
     //mise à jour de oldValue
     element.dataset.oldValue = newQuantity;
-    console.log(oldValue, newQuantity);
     calculateTotal(productId, oldValue, newQuantity);
 
     for (let j = 0; j < cart.length; j++) {
