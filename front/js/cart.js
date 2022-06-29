@@ -48,7 +48,7 @@ for (let item of cart) {
 
             let element = `<article class="cart__item" data-id="${item.id}" data-color="${item.color}">
                 <div class="cart__item__img">
-                    <img src="${item.image}" alt="Photographie d'un canapé">
+                    <img src="${item.image}" alt="${product.altTxt}">
                 </div>
                 <div class="cart__item__content">
                     <div class="cart__item__content__description">
