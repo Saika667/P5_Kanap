@@ -42,9 +42,11 @@ for (let item of cart) {
         //création de l'élément HTML pour chaque article (id et couleur identique)
         .then(function(product) {
             let price = product.price;
-            totalQuantity += item.quantity;
-            //ou totalPrice = totalPrice + price * item.quantity;
-            totalPrice += price * item.quantity;
+            if (item.quantity > 0) {
+                totalQuantity += item.quantity;
+                //ou totalPrice = totalPrice + price * item.quantity;
+                totalPrice += price * item.quantity;
+            }
 
             let element = `<article class="cart__item" data-id="${item.id}" data-color="${item.color}">
                 <div class="cart__item__img">
@@ -60,6 +62,7 @@ for (let item of cart) {
                         <div class="cart__item__content__settings__quantity">
                             <p>Qté :</p>
                             <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" data-old-value="${item.quantity}" value="${item.quantity}">
+                            <span class="quantityError"></span>
                         </div>
                         <div class="cart__item__content__settings__delete">
                             <p class="deleteItem">Supprimer</p>
@@ -156,9 +159,28 @@ function calculateTotal(productId, oldQuantity, newQuantity) {
         }
     })
     .then(function(product) {
-        let quantityDifference = newQuantity - oldQuantity;
+        let quantityDifference = 0;
         let price = product.price;
-        let priceDifference = quantityDifference * price;
+        let priceDifference = 0;
+        newQuantity = parseInt(newQuantity);
+        oldQuantity = parseInt(oldQuantity);
+
+        // Cas où l'ancienne et la nouvelle quantité sont > 0 -> traitement normal
+        if (newQuantity > 0 && oldQuantity > 0) {
+            quantityDifference = newQuantity - oldQuantity;
+            priceDifference = quantityDifference * price;
+            
+        // Cas où l'ancienne quantité est < 0 et la nouvelle quantité est > 0 -> différence = nouvelle quantité
+        } else if (newQuantity > 0 && oldQuantity < 0) {
+            quantityDifference = newQuantity;
+            priceDifference = quantityDifference * price;
+
+        // Cas où l'ancienne quantité est > 0 et la nouvelle quantité est < 0 -> 
+        // différence = on soustrait l'ancienne quantité
+        } else if (newQuantity < 0 && oldQuantity > 0) {
+            quantityDifference = - oldQuantity;
+            priceDifference = quantityDifference * price;
+        }
         
         totalQuantityElt.innerText = parseInt(totalQuantityElt.innerText) + quantityDifference;
         totalPriceElt.innerText = parseInt(totalPriceElt.innerText) + priceDifference;
@@ -198,7 +220,20 @@ submitButton.addEventListener('click', function(evt) {
     if (cityValidation(city) === false) {
         validationError = true;
     }
-    
+    for (let i = 0; i < inputQuantity.length; i++) {
+        let errorContainer = inputQuantity[i].closest('div').querySelector('.quantityError');
+        if(inputQuantity[i].value < 1) {
+            validationError = true;
+            errorContainer.innerText = "La quantité ne peut pas être inférieure à 1."
+        } else {
+            errorContainer.innerText = "";
+        }
+    }
+    if (totalQuantity <= 0) {
+        validationError = true;
+        cartItem.innerHTML = `<h2>Le panier est vide !</h2>`;
+    }
+
     if (validationError === true) {
         return;
     }
